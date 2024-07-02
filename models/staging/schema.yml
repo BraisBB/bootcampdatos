@@ -1,0 +1,16 @@
+version: 2
+
+sources:
+  - name: adrian_brais_samuel__schema
+    database: RAW
+    schema: adrian_brais_samuel__schema
+    tables:
+      - name: raw_customer
+      - name: raw_orders
+      - name: raw_lineitem
+      - name: raw_part
+      - name: raw_supplier
+      - name: raw_partsupp
+      - name: raw_nation
+      - name: raw_region
+
