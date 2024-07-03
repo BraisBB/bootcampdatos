@@ -11,4 +11,4 @@ WITH supplier_transformation AS (
     LEFT JOIN {{ ref('stg_nation') }} n ON s.s_nationkey = n.n_nationkey
     LEFT JOIN {{ ref('stg_region') }} r ON n.n_regionkey = r.r_regionkey
 )
-SELECT * FROM supplier_transformation;
+SELECT * FROM supplier_transformation

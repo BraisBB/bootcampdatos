@@ -93,4 +93,4 @@ SELECT *
 FROM date_elements_customer
 UNION ALL
 SELECT *
-FROM date_elements_store;
+FROM date_elements_store
