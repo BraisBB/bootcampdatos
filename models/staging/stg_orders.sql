@@ -6,6 +6,7 @@ WITH orders_source AS (
         o_totalprice,
         o_orderdate,
         o_clerk,
+        o_orderpriority,
         o_shippriority
     FROM {{ source('adrian_brais_samuel__schema', 'raw_orders') }}
 )
