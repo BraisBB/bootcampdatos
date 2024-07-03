@@ -99,8 +99,8 @@ sales_data AS (
         END AS plazo_entrega
     FROM cleaned_lineitems l
     JOIN cleaned_orders o ON l.l_orderkey = o.o_orderkey
-    JOIN dimension_store d ON l.l_orderkey = d.l_orderkey
-    JOIN dimension_event e ON l.l_orderkey = e.l_orderkey
+    JOIN dim_store d ON l.l_orderkey = d.l_orderkey
+    JOIN dim_event e ON l.l_orderkey = e.l_orderkey
     LEFT JOIN exchange_rates er ON d.pais = er.pais
 )
 SELECT * FROM sales_data
