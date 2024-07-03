@@ -94,8 +94,8 @@ sales_data AS (
         l.l_receiptdate AS receiptdate_UTC,
         DATEADD(hour, 5, l.l_receiptdate) AS receiptdate_local,
         CASE 
-            WHEN l.l_receiptdate <= l.l_shipdate + INTERVAL '10' DAY THEN 'En plazo'
-            WHEN l.l_receiptdate <= l.l_shipdate + INTERVAL '20' DAY THEN 'Retraso moderado'
+            WHEN DATEDIFF(day, l.l_shipdate, l.l_receiptdate) <= 10 THEN 'En plazo'
+            WHEN DATEDIFF(day, l.l_shipdate, l.l_receiptdate) <= 20 THEN 'Retraso moderado'
             ELSE 'Retraso considerable'
         END AS plazo_entrega
     FROM cleaned_lineitems l
@@ -104,4 +104,4 @@ sales_data AS (
     JOIN dimension_event e ON l.l_orderkey = e.l_orderkey
     LEFT JOIN exchange_rates er ON d.pais = er.pais
 )
-SELECT * FROM sales_data;
+SELECT * FROM sales_data
