@@ -1,4 +1,3 @@
--- models/facts/fact_sales.sql
 WITH cleaned_orders AS (
     SELECT 
         o_orderkey,
@@ -32,7 +31,7 @@ cleaned_lineitems AS (
     FROM {{ ref('stg_lineitem') }}
     WHERE l_linestatus != 'C' -- Excluir artículos anulados
 ),
-dimension_store AS (
+dim_store AS (
     SELECT 
         l_orderkey,
         'Store_' || CAST(ABS(MOD(l_orderkey, 100)) AS STRING) AS tienda,
@@ -45,7 +44,7 @@ dimension_store AS (
         END AS pais
     FROM {{ ref('stg_lineitem') }}
 ),
-dimension_event AS (
+dim_event AS (
     SELECT 
         l_orderkey,
         CASE 
@@ -85,14 +84,14 @@ sales_data AS (
         (l.l_extendedprice * (1 - l.l_discount) + l.l_tax) * er.tipo_cambio AS totalprice_local_store,
         o.o_totalprice * er.tipo_cambio AS totalprice_local_customer,
         o.o_orderdate AS orderdate_UTC,
-        DATEADD(hour, 5, o.o_orderdate) AS orderdate_local_store, -- Simulación de la conversión de zona horaria
-        DATEADD(hour, 5, o.o_orderdate) AS orderdate_local_customer, -- Simulación de la conversión de zona horaria
+        DATEADD('SECOND', UNIFORM(0, 86400, RANDOM()),  o.o_orderdate) AS orderdate_local_store, -- Simulación de la conversión de zona horaria
+        DATEADD('SECOND', UNIFORM(0, 86400, RANDOM()),  o.o_orderdate) AS orderdate_local_customer, -- Simulación de la conversión de zona horaria
         l.l_shipdate AS shipdate_UTC,
-        DATEADD(hour, 5, l.l_shipdate) AS shipdate_local,
+        DATEADD('SECOND', UNIFORM(0, 86400, RANDOM()), l.l_shipdate) as shipdate_local,
         l.l_commitdate AS commitdate_UTC,
         DATEADD(hour, 5, l.l_commitdate) AS commitdate_local,
         l.l_receiptdate AS receiptdate_UTC,
-        DATEADD(hour, 5, l.l_receiptdate) AS receiptdate_local,
+        DATEADD('SECOND', UNIFORM(0, 86400, RANDOM()), l.l_receiptdate) as receiptdate_local,
         CASE 
             WHEN DATEDIFF(day, l.l_shipdate, l.l_receiptdate) <= 10 THEN 'En plazo'
             WHEN DATEDIFF(day, l.l_shipdate, l.l_receiptdate) <= 20 THEN 'Retraso moderado'
