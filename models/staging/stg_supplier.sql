@@ -1,7 +1,7 @@
 WITH supplier_source AS (
     SELECT 
         s_suppkey,
-        s_name AS suppname,
+        s_name AS s_suppname,
         s_address,
         s_nationkey,
         s_phone,
