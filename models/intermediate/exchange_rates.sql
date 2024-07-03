@@ -1,6 +1,6 @@
 -- models/staging/stg_exchange_rates.sql
 
-WITH nation AS (
+WITH exchange_rates AS (
     SELECT 
         N_NATIONKEY,
         N_NAME
@@ -37,4 +37,4 @@ SELECT
         ELSE 1.0 -- Default exchange rate if not matched
     END AS tipo_cambio,
     current_date() AS fecha
-FROM nation
+FROM exchange_rates
