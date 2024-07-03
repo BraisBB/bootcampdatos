@@ -1,4 +1,4 @@
-{{ config(
+/* {{ config(
     materialized='incremental',
     unique_key='T_Timekey'
 ) }}
@@ -93,4 +93,4 @@ SELECT *
 FROM date_elements_customer
 UNION ALL
 SELECT *
-FROM date_elements_store
+FROM date_elements_store */
