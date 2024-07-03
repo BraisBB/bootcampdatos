@@ -37,4 +37,4 @@ SELECT
         ELSE 1.0 -- Default exchange rate if not matched
     END AS tipo_cambio,
     current_date() AS fecha
-FROM nation;
+FROM nation
