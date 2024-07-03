@@ -13,4 +13,6 @@ sources:
       - name: raw_partsupp
       - name: raw_nation
       - name: raw_region
+      - name: raw_store
+      - name: raw_event
 
