@@ -26,8 +26,9 @@ WITH date_elements AS (
             ELSE 'Weekend'
         END AS T_Weekday_Indicator
     FROM {{ ref('stg_orders') }}
-)
-, date_elements_customer AS (
+),
+
+date_elements_customer AS (
     SELECT DISTINCT
         TO_CHAR(CONVERT_TIMEZONE('UTC', N_TIMEZONE, O_ORDERDATE), 'YYYYMMDDHH24MISS')::INT AS T_Timekey,
         CONVERT_TIMEZONE('UTC', N_TIMEZONE, O_ORDERDATE) AS T_SQL_Date_Stamp,
@@ -53,9 +54,10 @@ WITH date_elements AS (
     JOIN {{ ref('stg_customer') }} ON O_CUSTKEY = C_CUSTKEY
     JOIN {{ ref('stg_nation') }} ON C_NATIONKEY = N_NATIONKEY
     WHERE T_Timekey
-    NOT IN ( select T_Timekey from date_elements )
-)
-, date_elements_store AS (
+    NOT IN (SELECT T_Timekey FROM date_elements)
+),
+
+date_elements_store AS (
     SELECT DISTINCT
         TO_CHAR(CONVERT_TIMEZONE('UTC', N_TIMEZONE, O_ORDERDATE), 'YYYYMMDDHH24MISS')::INT AS T_Timekey,
         CONVERT_TIMEZONE('UTC', N_TIMEZONE, O_ORDERDATE) AS T_SQL_Date_Stamp,
@@ -86,7 +88,9 @@ WITH date_elements AS (
 
 SELECT *
 FROM date_elements
-UNION
-SELECT * FROM date_elements_customer
-UNION
-SELECT * FROM date_elements_store
+UNION ALL
+SELECT *
+FROM date_elements_customer
+UNION ALL
+SELECT *
+FROM date_elements_store;
