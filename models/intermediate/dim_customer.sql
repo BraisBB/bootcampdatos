@@ -1,7 +1,7 @@
 WITH customer_transformation AS (
     SELECT 
         c.c_custkey,
-        c.c_name AS c_custname,
+        c.c_custname,
         c.c_address,
         n.n_name AS c_custnationname,
         r.r_regionkey AS c_custregionname,
@@ -12,4 +12,4 @@ WITH customer_transformation AS (
     LEFT JOIN {{ ref('stg_nation') }} n ON c.c_nationkey = n.n_nationkey
     LEFT JOIN {{ ref('stg_region') }} r ON n.n_regionkey = r.r_regionkey
 )
-SELECT * FROM customer_transformation;
+SELECT * FROM customer_transformation
