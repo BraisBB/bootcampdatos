@@ -60,7 +60,7 @@ exchange_rates AS (
         pais,
         tipo_cambio,
         fecha
-    FROM {{ ref('stg_exchange_rates') }}
+    FROM {{ ref('exchange_rates') }}
 ),
 sales_data AS (
     SELECT 

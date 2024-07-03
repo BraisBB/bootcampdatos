@@ -4,7 +4,7 @@ WITH nation AS (
     SELECT 
         N_NATIONKEY,
         N_NAME
-    FROM {{ source('your_schema', 'raw_nation') }}
+    FROM {{ source('adrian_brais_samuel__schema', 'raw_nation') }}
 )
 SELECT 
     N_NAME AS pais,
