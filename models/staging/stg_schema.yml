@@ -15,4 +15,5 @@ sources:
       - name: raw_region
       - name: raw_store
       - name: raw_event
+      - name: raw_timechange
 
