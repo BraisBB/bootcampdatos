@@ -5,4 +5,4 @@ WITH store_transformation AS (
         st_storenationname
     FROM {{ ref('stg_store') }}
 )
-SELECT * FROM store_transformation;
+SELECT * FROM store_transformation
