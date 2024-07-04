@@ -166,6 +166,13 @@ exchange_rates AS (
         fecha
     FROM {{ ref('exchange_rates') }}
 ),
+timechange_source AS (
+    SELECT 
+        N_NATIONKEY AS tc_nationkey,
+        N_NAME AS tc_nationname,
+        adjusted_time AS tc_adjustedtime
+    FROM {{ source('adrian_brais_samuel__schema', 'raw_timechange') }}
+),
 sales_data AS (
     SELECT 
         l.l_orderkey,
@@ -224,7 +231,8 @@ sales_data AS (
         s.s_phone,
         s.s_acctbal,
         s.ps_availqty,
-        s.ps_supplycost
+        s.ps_supplycost,
+        tc.tc_adjustedtime AS adjusted_time
     FROM cleaned_lineitems l
     JOIN cleaned_orders o ON l.l_orderkey = o.o_orderkey
     JOIN dim_store d ON l.l_orderkey = d.l_orderkey
@@ -232,5 +240,6 @@ sales_data AS (
     JOIN dim_customer c ON o.o_custkey = c.c_custkey
     JOIN dim_supplier s ON s.ps_partkey = l.l_partkey AND s.ps_suppkey = l.l_suppkey
     LEFT JOIN exchange_rates er ON d.pais = er.pais
+    LEFT JOIN timechange_source tc ON c.c_custnationname = tc.tc_nationname
 )
 SELECT * FROM sales_data
