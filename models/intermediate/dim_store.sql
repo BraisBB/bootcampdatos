@@ -1,3 +1,7 @@
+{{ config(
+    materialized='incremental',
+    unique_key='st_storekey'
+) }}
 WITH store_transformation AS (
     SELECT 
         st_storekey,

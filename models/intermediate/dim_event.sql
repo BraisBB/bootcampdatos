@@ -1,3 +1,7 @@
+{{ config(
+    materialized='incremental',
+    unique_key='ev_eventkey'
+) }}
 WITH dim_event AS (
 SELECT 
     ev_eventkey ,

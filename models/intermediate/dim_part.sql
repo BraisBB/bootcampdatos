@@ -1,3 +1,7 @@
+{{ config(
+    materialized='incremental',
+    unique_key=' p_partkey'
+) }}
 WITH dim_part AS (
 
     SELECT 
