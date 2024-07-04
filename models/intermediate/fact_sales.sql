@@ -20,6 +20,7 @@ WITH cleaned_orders AS (
 cleaned_lineitems AS (
     SELECT 
         l_orderkey,
+        l_linenumber,
         l_partkey,
         l_suppkey,
         l_quantity,
@@ -50,7 +51,7 @@ dim_store AS (
         l.l_orderkey,
         s.st_storename AS tienda,
         s.st_storenationname AS pais
-    FROM {{ ref('stg_lineitem') }} l
+    FROM cleaned_lineitems l
     JOIN store_transformation s ON MOD(ABS(l.l_orderkey), 100) + 1 = s.st_storekey
 ),
 event_source AS (
@@ -168,6 +169,7 @@ exchange_rates AS (
 sales_data AS (
     SELECT 
         l.l_orderkey,
+        l.l_linenumber,
         o.o_custkey,
         c.c_custname,
         c.c_address,
