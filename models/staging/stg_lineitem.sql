@@ -1,9 +1,9 @@
 WITH lineitem_source AS (
     SELECT 
+        l_linenumber,
         l_orderkey,
         l_partkey,
         l_suppkey,
-        l_linenumber,
         l_quantity,
         l_extendedprice,
         l_discount,
