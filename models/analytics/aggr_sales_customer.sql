@@ -41,10 +41,9 @@ WITH sales_data AS (
             WHEN DATEDIFF(day, l.l_shipdate, l.l_receiptdate) <= 20 THEN 'Retraso moderado'
             ELSE 'Retraso considerable'
         END AS plazo_entrega
-    FROM {{ ref('stg_lineitem') }} l
-    JOIN {{ ref('stg_orders') }} o ON l.l_orderkey = o.o_orderkey
-    JOIN {{ ref('dim_store') }} d ON l.l_orderkey = d.l_orderkey
-    JOIN {{ ref('dim_event') }} e ON l.l_orderkey = e.o_orderkey
+    FROM {{ ref('fact_sales') }} fs
+    JOIN {{ ref('dim_store') }} d ON fs.tienda = d.tienda
+    JOIN {{ ref('dim_event') }} e ON fs.id_evento = e.id_evento
     LEFT JOIN {{ ref('exchange_rates') }} er ON d.pais = er.pais
 )
 
@@ -56,4 +55,4 @@ SELECT
     SUM(totalprice_usd) AS total_sales_usd,
     SUM(totalprice_local_customer) AS total_sales_local
 FROM sales_data
-GROUP BY o_custkey, fecha_pedido::date
+GROUP BY o_custkey, fecha_pedido::date;
