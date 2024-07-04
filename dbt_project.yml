@@ -43,7 +43,7 @@ models:
       materialized: view
       +database: PROYECTO
     analytics:
-      materialized: table
+      materialized: view
       +database: PROYECTO
 
 vars:
