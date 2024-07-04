@@ -1,6 +1,6 @@
 {{ config(
     materialized='incremental',
-    unique_key='T_Timekey'
+    unique_key='tm_datekey'
 ) }}
 
 WITH dim_time AS (
