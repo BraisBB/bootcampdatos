@@ -3,15 +3,14 @@
     unique_key='T_Timekey'
 ) }}
 
-WITH date_elements AS (
+WITH dim_time AS (
     SELECT DISTINCT
         TO_CHAR(O_ORDERDATE, 'YYYYMMDDHH24MISS')::INT AS tm_datekey,
         O_ORDERDATE AS tm_date,
-        DATE(O_ORDERDATE) AS T_Date,
-        EXTRACT(dayofweek FROM O_ORDERDATE) AS T_Day_Number_of_Week,
+        EXTRACT(dayofweek FROM O_ORDERDATE) AS TM_Day_Number_of_Week,
         EXTRACT(day FROM O_ORDERDATE) AS tm_day,
-        MONTHNAME(O_ORDERDATE) AS tm_monthname
-        EXTRACT(year FROM O_ORDERDATE) AS TM_Year,
+        MONTHNAME(O_ORDERDATE) AS tm_monthname,
+        EXTRACT(year FROM O_ORDERDATE) AS tm_year
     FROM {{ ref('stg_orders') }}
 )
-select * from date_elements
+select * from dim_time
