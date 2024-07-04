@@ -7,9 +7,17 @@ WITH dim_time AS (
     SELECT DISTINCT
         TO_CHAR(O_ORDERDATE, 'YYYYMMDDHH24MISS')::INT AS tm_datekey,
         O_ORDERDATE AS tm_date,
-        EXTRACT(dayofweek FROM O_ORDERDATE) AS TM_Day_Number_of_Week,
         EXTRACT(day FROM O_ORDERDATE) AS tm_day,
-        EXTRACT(month FROM O_ORDERDATE) AS tm_year,
+        CASE
+            WHEN EXTRACT(dayofweek FROM O_ORDERDATE) = 0 THEN 'Sunday'
+            WHEN EXTRACT(dayofweek FROM O_ORDERDATE) = 1 THEN 'Monday'
+            WHEN EXTRACT(dayofweek FROM O_ORDERDATE) = 2 THEN 'Tuesday'
+            WHEN EXTRACT(dayofweek FROM O_ORDERDATE) = 3 THEN 'Wednesday'
+            WHEN EXTRACT(dayofweek FROM O_ORDERDATE) = 4 THEN 'Thursday'
+            WHEN EXTRACT(dayofweek FROM O_ORDERDATE) = 5 THEN 'Friday'
+            WHEN EXTRACT(dayofweek FROM O_ORDERDATE) = 6 THEN 'Saturday'
+        END AS tm_dayname,
+        EXTRACT(month FROM O_ORDERDATE) AS tm_month,
         MONTHNAME(O_ORDERDATE) AS tm_monthname,
         EXTRACT(year FROM O_ORDERDATE) AS tm_year
     FROM {{ ref('stg_orders') }}
