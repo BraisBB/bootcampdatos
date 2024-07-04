@@ -71,6 +71,32 @@ dim_event AS (
     FROM event_source e
     JOIN cleaned_orders o ON o.o_orderdate BETWEEN e.ev_startdate AND e.ev_enddate
 ),
+customer_transformation AS (
+    SELECT 
+        c.c_custkey,
+        c.c_custname,
+        c.c_address,
+        n.n_name AS c_custnationname,
+        r.r_regionkey AS c_custregionname,
+        c.c_phone,
+        c.c_acctbal,
+        c.c_mktsegment
+    FROM {{ ref('stg_customer') }} c
+    LEFT JOIN {{ ref('stg_nation') }} n ON c.c_nationkey = n.n_nationkey
+    LEFT JOIN {{ ref('stg_region') }} r ON n.n_regionkey = r.r_regionkey
+),
+dim_customer AS (
+    SELECT
+        c.c_custkey,
+        c.c_custname,
+        c.c_address,
+        c.c_custnationname,
+        c.c_custregionname,
+        c.c_phone,
+        c.c_acctbal,
+        c.c_mktsegment
+    FROM customer_transformation c
+),
 exchange_rates AS (
     SELECT 
         pais,
@@ -82,6 +108,13 @@ sales_data AS (
     SELECT 
         l.l_orderkey,
         o.o_custkey,
+        c.c_custname,
+        c.c_address,
+        c.c_custnationname,
+        c.c_custregionname,
+        c.c_phone,
+        c.c_acctbal,
+        c.c_mktsegment,
         l.l_partkey,
         l.l_quantity,
         l.l_extendedprice,
@@ -118,6 +151,7 @@ sales_data AS (
     JOIN cleaned_orders o ON l.l_orderkey = o.o_orderkey
     JOIN dim_store d ON l.l_orderkey = d.l_orderkey
     JOIN dim_event e ON l.l_orderkey = e.o_orderkey
+    JOIN dim_customer c ON o.o_custkey = c.c_custkey
     LEFT JOIN exchange_rates er ON d.pais = er.pais
 )
-SELECT * FROM sales_data
+SELECT DISTINCT * FROM sales_data
