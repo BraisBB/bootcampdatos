@@ -12,4 +12,4 @@ SELECT
     SUM(totalprice_usd) AS total_sales_usd,
     SUM(totalprice_local_store) AS total_sales_local
 FROM sales_data
-GROUP BY tienda, fecha_pedido::date;
+GROUP BY tienda, fecha_pedido::date
