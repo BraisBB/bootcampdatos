@@ -5,11 +5,11 @@ WITH sales_data AS (
 )
 
 SELECT 
-    o_custkey AS customer_id,
-    fecha_pedido::date AS order_date,
-    COUNT(DISTINCT l_orderkey) AS total_orders,
+    custkey AS customer_id,
+    orderdate_UTC::date AS order_date,
+    COUNT(DISTINCT orderkey) AS total_orders,
     SUM(l_quantity) AS total_quantity,
     SUM(totalprice_usd) AS total_sales_usd,
     SUM(totalprice_local_customer) AS total_sales_local
 FROM sales_data
-GROUP BY o_custkey, fecha_pedido::date
+GROUP BY custkey, forder_date

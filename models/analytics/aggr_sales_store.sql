@@ -6,7 +6,7 @@ WITH sales_data AS (
 
 SELECT 
     tienda,
-    fecha_pedido::date AS order_date,
+    orderdate_UTC::date AS order_date,
     COUNT(DISTINCT l_orderkey) AS total_orders,
     SUM(l_quantity) AS total_quantity,
     SUM(totalprice_usd) AS total_sales_usd,
