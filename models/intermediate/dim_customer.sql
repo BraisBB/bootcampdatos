@@ -1,3 +1,7 @@
+{{ config(
+    materialized='incremental',
+    unique_key='c_custkey'
+) }}
 WITH customer_transformation AS (
     SELECT 
         c.c_custkey,

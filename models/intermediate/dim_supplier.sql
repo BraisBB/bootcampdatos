@@ -1,3 +1,7 @@
+{{ config(
+    materialized='incremental',
+    unique_key='s_suppkey'
+) }}
 WITH supplier_transformation AS (
     SELECT 
         s.s_suppkey,
