@@ -1,3 +1,9 @@
+{{ config(
+    materialized='incremental',
+    unique_key= ['l.l_linenumber', 'l.l_orderkey']
+) }}
+
+-- models/facts/fact_sales.sql
 
 WITH cleaned_orders AS (
     SELECT 

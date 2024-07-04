@@ -1,10 +1,4 @@
 -- models/analytic/aggr_sales_customer.sql
-
-{{ config(
-    materialized='incremental',
-    unique_key='customer_key_order_date'
-) }}
-
 WITH sales_data AS (
     SELECT *
     FROM {{ ref('fact_sales') }} 
