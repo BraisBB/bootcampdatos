@@ -1,3 +1,4 @@
+-- models/facts/fact_sales.sql
 WITH cleaned_orders AS (
     SELECT 
         o_orderkey,
@@ -31,28 +32,44 @@ cleaned_lineitems AS (
     FROM {{ ref('stg_lineitem') }}
     WHERE l_linestatus != 'C' -- Excluir artículos anulados
 ),
+store_transformation AS (
+    SELECT 
+        st_storekey,
+        st_storename,
+        st_storenationname
+    FROM {{ ref('stg_store') }}
+),
 dim_store AS (
     SELECT 
-        l_orderkey,
-        'Store_' || CAST(ABS(MOD(l_orderkey, 100)) AS STRING) AS tienda,
-        CASE 
-            WHEN ABS(MOD(l_orderkey, 5)) = 0 THEN 'UNITED STATES'
-            WHEN ABS(MOD(l_orderkey, 5)) = 1 THEN 'CANADA'
-            WHEN ABS(MOD(l_orderkey, 5)) = 2 THEN 'MEXICO'
-            WHEN ABS(MOD(l_orderkey, 5)) = 3 THEN 'UNITED KINGDOM'
-            ELSE 'GERMANY'
-        END AS pais
-    FROM {{ ref('stg_lineitem') }}
+        l.l_orderkey,
+        s.st_storename AS tienda,
+        s.st_storenationname AS pais
+    FROM {{ ref('stg_lineitem') }} l
+    JOIN store_transformation s ON MOD(ABS(l.l_orderkey), 100) + 1 = s.st_storekey
+),
+event_source AS (
+    SELECT 
+        ev_eventkey,
+        ev_eventname,
+        ev_eventnationame,
+        ev_startdate,
+        ev_enddate
+    FROM {{ source('adrian_brais_samuel__schema', 'raw_event') }}
 ),
 dim_event AS (
     SELECT 
-        l_orderkey,
+        e.ev_eventkey,
+        e.ev_eventname,
+        e.ev_eventnationame,
+        e.ev_startdate,
+        e.ev_enddate,
+        o.o_orderkey,
         CASE 
-            WHEN l_shipdate BETWEEN '2023-11-01' AND '2023-11-30' THEN 'Black Friday'
-            WHEN l_shipdate BETWEEN '2023-12-01' AND '2023-12-31' THEN 'Holiday Sale'
-            ELSE 'Regular'
+            WHEN o.o_orderdate BETWEEN e.ev_startdate AND e.ev_enddate THEN e.ev_eventkey
+            ELSE NULL
         END AS id_evento
-    FROM {{ ref('stg_lineitem') }}
+    FROM event_source e
+    JOIN cleaned_orders o ON o.o_orderdate BETWEEN e.ev_startdate AND e.ev_enddate
 ),
 exchange_rates AS (
     SELECT 
@@ -100,7 +117,7 @@ sales_data AS (
     FROM cleaned_lineitems l
     JOIN cleaned_orders o ON l.l_orderkey = o.o_orderkey
     JOIN dim_store d ON l.l_orderkey = d.l_orderkey
-    JOIN dim_event e ON l.l_orderkey = e.l_orderkey
+    JOIN dim_event e ON l.l_orderkey = e.o_orderkey
     LEFT JOIN exchange_rates er ON d.pais = er.pais
 )
 SELECT * FROM sales_data
