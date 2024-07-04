@@ -154,4 +154,4 @@ sales_data AS (
     JOIN dim_customer c ON o.o_custkey = c.c_custkey
     LEFT JOIN exchange_rates er ON d.pais = er.pais
 )
-SELECT DISTINCT * FROM sales_data
+SELECT * FROM sales_data
