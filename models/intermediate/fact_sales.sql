@@ -4,6 +4,7 @@
 ) }}
 
 -- models/facts/fact_sales.sql
+
 WITH cleaned_orders AS (
     SELECT 
         o_orderkey,
@@ -18,7 +19,6 @@ WITH cleaned_orders AS (
 ),
 cleaned_lineitems AS (
     SELECT 
-        l_linenumber,
         l_orderkey,
         l_partkey,
         l_suppkey,
@@ -103,6 +103,61 @@ dim_customer AS (
         c.c_mktsegment
     FROM customer_transformation c
 ),
+supplier_source AS (
+    SELECT 
+        s_suppkey,
+        s_name AS s_suppname,
+        s_address,
+        s_nationkey,
+        s_phone,
+        s_acctbal
+    FROM {{ source('adrian_brais_samuel__schema', 'raw_supplier') }}
+),
+part_source AS (
+    SELECT 
+        p_partkey,
+        p_name AS p_partname,
+        p_mfgr,
+        p_brand,
+        p_type,
+        p_size,
+        p_container,
+        p_retailprice
+    FROM {{ source('adrian_brais_samuel__schema', 'raw_part') }}
+),
+partsupp_source AS (
+    SELECT 
+        ps_partkey,
+        ps_suppkey,
+        ps_availqty,
+        ps_supplycost
+    FROM {{ source('adrian_brais_samuel__schema', 'raw_partsupp') }}
+),
+dim_supplier AS (
+    SELECT
+        ps.ps_partkey,
+        ps.ps_suppkey,
+        p.p_partname,
+        p.p_mfgr,
+        p.p_brand,
+        p.p_type,
+        p.p_size,
+        p.p_container,
+        p.p_retailprice,
+        s.s_suppname,
+        s.s_address AS s_supplier_address,
+        n.n_name AS s_supplier_nationname,
+        r.r_regionkey AS s_supplier_regionname,
+        s.s_phone,
+        s.s_acctbal,
+        ps.ps_availqty,
+        ps.ps_supplycost
+    FROM partsupp_source ps
+    JOIN supplier_source s ON ps.ps_suppkey = s.s_suppkey
+    JOIN part_source p ON ps.ps_partkey = p.p_partkey
+    LEFT JOIN {{ ref('stg_nation') }} n ON s.s_nationkey = n.n_nationkey
+    LEFT JOIN {{ ref('stg_region') }} r ON n.n_regionkey = r.r_regionkey
+),
 exchange_rates AS (
     SELECT 
         pais,
@@ -112,7 +167,6 @@ exchange_rates AS (
 ),
 sales_data AS (
     SELECT 
-        l.l_linenumber,
         l.l_orderkey,
         o.o_custkey,
         c.c_custname,
@@ -153,12 +207,28 @@ sales_data AS (
             WHEN DATEDIFF(day, l.l_shipdate, l.l_receiptdate) <= 10 THEN 'En plazo'
             WHEN DATEDIFF(day, l.l_shipdate, l.l_receiptdate) <= 20 THEN 'Retraso moderado'
             ELSE 'Retraso considerable'
-        END AS plazo_entrega
+        END AS plazo_entrega,
+        s.p_partname,
+        s.p_mfgr,
+        s.p_brand,
+        s.p_type,
+        s.p_size,
+        s.p_container,
+        s.p_retailprice,
+        s.s_suppname,
+        s.s_supplier_address,
+        s.s_supplier_nationname,
+        s.s_supplier_regionname,
+        s.s_phone,
+        s.s_acctbal,
+        s.ps_availqty,
+        s.ps_supplycost
     FROM cleaned_lineitems l
     JOIN cleaned_orders o ON l.l_orderkey = o.o_orderkey
     JOIN dim_store d ON l.l_orderkey = d.l_orderkey
     JOIN dim_event e ON l.l_orderkey = e.o_orderkey
     JOIN dim_customer c ON o.o_custkey = c.c_custkey
+    JOIN dim_supplier s ON l.l_partkey = s.ps_partkey AND l.l_suppkey = s.ps_suppkey
     LEFT JOIN exchange_rates er ON d.pais = er.pais
 )
 SELECT * FROM sales_data
