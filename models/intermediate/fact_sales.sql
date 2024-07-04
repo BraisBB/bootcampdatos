@@ -107,24 +107,24 @@ dim_customer AS (
 supplier_source AS (
     SELECT 
         s_suppkey,
-        s_name AS s_suppname,
+        s_suppname,
         s_address,
         s_nationkey,
         s_phone,
         s_acctbal
-    FROM {{ source('adrian_brais_samuel__schema', 'raw_supplier') }}
+    FROM {{ ref('stg_supplier') }}
 ),
 part_source AS (
     SELECT 
         p_partkey,
-        p_name AS p_partname,
+        p_partname,
         p_mfgr,
         p_brand,
         p_type,
         p_size,
         p_container,
         p_retailprice
-    FROM {{ source('adrian_brais_samuel__schema', 'raw_part') }}
+    FROM {{ ref('stg_part') }}
 ),
 partsupp_source AS (
     SELECT 
@@ -132,7 +132,7 @@ partsupp_source AS (
         ps_suppkey,
         ps_availqty,
         ps_supplycost
-    FROM {{ source('adrian_brais_samuel__schema', 'raw_partsupp') }}
+    FROM {{ ref('stg_partsupp') }}
 ),
 dim_supplier AS (
     SELECT
@@ -230,7 +230,7 @@ sales_data AS (
     JOIN dim_store d ON l.l_orderkey = d.l_orderkey
     JOIN dim_event e ON l.l_orderkey = e.o_orderkey
     JOIN dim_customer c ON o.o_custkey = c.c_custkey
-    JOIN dim_supplier s ON l.l_partkey = s.ps_partkey AND l.l_suppkey = s.ps_suppkey
+    JOIN dim_supplier s ON s.ps_partkey = l.l_partkey AND s.ps_suppkey = l.l_suppkey
     LEFT JOIN exchange_rates er ON d.pais = er.pais
 )
 SELECT * FROM sales_data
