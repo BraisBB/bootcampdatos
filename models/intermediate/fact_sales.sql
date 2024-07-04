@@ -1,6 +1,6 @@
 {{ config(
     materialized='incremental',
-    unique_key= ['l.l_linenumber', 'l.l_orderkey']
+    unique_key= ['l_linenumber', 'l_orderkey']
 ) }}
 
 -- models/facts/fact_sales.sql
@@ -49,6 +49,7 @@ store_transformation AS (
 dim_store AS (
     SELECT 
         l.l_orderkey,
+        s.st_storekey AS storekey,
         s.st_storename AS tienda,
         s.st_storenationname AS pais
     FROM cleaned_lineitems l
@@ -174,72 +175,44 @@ timechange_source AS (
     FROM {{ source('adrian_brais_samuel__schema', 'raw_timechange') }}
 ),
 sales_data AS (
-    SELECT 
-        l.l_orderkey,
-        l.l_linenumber,
-        o.o_custkey,
-        c.c_custname,
-        c.c_address,
-        c.c_custnationname,
-        c.c_custregionname,
-        c.c_phone,
-        c.c_acctbal,
-        c.c_mktsegment,
-        l.l_partkey,
-        l.l_quantity,
-        l.l_extendedprice,
-        l.l_discount,
-        l.l_tax,
-        l.tipo_operacion,
-        o.clerk,
-        o.o_orderdate AS fecha_pedido,
-        l.l_shipdate AS fecha_envio,
-        l.l_receiptdate AS fecha_recepcion,
-        o.o_totalprice AS totalprice,
-        e.id_evento,
-        d.tienda,
-        d.pais AS pais_tienda,
-        er.tipo_cambio AS tipo_cambio_tienda,
-        l.l_extendedprice * (1 - l.l_discount) + l.l_tax AS totalprice_usd,
-        (l.l_extendedprice * (1 - l.l_discount) + l.l_tax) * er.tipo_cambio AS totalprice_local_store,
-        o.o_totalprice * er.tipo_cambio AS totalprice_local_customer,
-        o.o_orderdate AS orderdate_UTC,
-        DATEADD('SECOND', UNIFORM(0, 86400, RANDOM()),  o.o_orderdate) AS orderdate_local_store, -- Simulación de la conversión de zona horaria
-        DATEADD('SECOND', UNIFORM(0, 86400, RANDOM()),  o.o_orderdate) AS orderdate_local_customer, -- Simulación de la conversión de zona horaria
-        l.l_shipdate AS shipdate_UTC,
-        DATEADD('SECOND', UNIFORM(0, 86400, RANDOM()), l.l_shipdate) as shipdate_local,
-        l.l_commitdate AS commitdate_UTC,
-        DATEADD(hour, 5, l.l_commitdate) AS commitdate_local,
-        l.l_receiptdate AS receiptdate_UTC,
-        DATEADD('SECOND', UNIFORM(0, 86400, RANDOM()), l.l_receiptdate) as receiptdate_local,
-        CASE 
-            WHEN DATEDIFF(day, l.l_shipdate, l.l_receiptdate) <= 10 THEN 'En plazo'
-            WHEN DATEDIFF(day, l.l_shipdate, l.l_receiptdate) <= 20 THEN 'Retraso moderado'
-            ELSE 'Retraso considerable'
-        END AS plazo_entrega,
-        s.p_partname,
-        s.p_mfgr,
-        s.p_brand,
-        s.p_type,
-        s.p_size,
-        s.p_container,
-        s.p_retailprice,
-        s.s_suppname,
-        s.s_supplier_address,
-        s.s_supplier_nationname,
-        s.s_supplier_regionname,
-        s.s_phone,
-        s.s_acctbal,
-        s.ps_availqty,
-        s.ps_supplycost,
-        tc.tc_adjustedtime AS adjusted_time
-    FROM cleaned_lineitems l
-    JOIN cleaned_orders o ON l.l_orderkey = o.o_orderkey
-    JOIN dim_store d ON l.l_orderkey = d.l_orderkey
-    JOIN dim_event e ON l.l_orderkey = e.o_orderkey
-    JOIN dim_customer c ON o.o_custkey = c.c_custkey
-    JOIN dim_supplier s ON s.ps_partkey = l.l_partkey AND s.ps_suppkey = l.l_suppkey
-    LEFT JOIN exchange_rates er ON d.pais = er.pais
-    LEFT JOIN timechange_source tc ON c.c_custnationname = tc.tc_nationname
+SELECT 
+    l.l_linenumber AS linenumber,
+    l.l_orderkey AS orderkey,
+    o.clerk AS clerk,
+    o.o_totalprice AS totalprice,
+    o.o_totalprice * er.tipo_cambio AS totalprice_local_customer,
+    (l.l_extendedprice * (1 - l.l_discount) + l.l_tax) * er.tipo_cambio AS totalprice_local_store,
+    o.o_orderdate AS orderdate_UTC,
+    DATEADD('SECOND', UNIFORM(0, 86400, RANDOM()),  o.o_orderdate) AS orderdate_local,
+    o.o_orderpriority AS orderpriority,
+    o.o_orderstatus AS orderstatus,
+    l.l_partkey AS partkey,
+    l.l_suppkey AS suppkey,
+    o.o_custkey AS custkey,
+    l.l_quantity AS quantity,
+    l.l_extendedprice AS extendedprice,
+    l.l_discount AS discount,
+    l.l_tax AS tax,
+    l.l_returnflag AS returnflag,
+    l.l_linestatus AS linestatus,
+    l.l_shipdate AS shipdate_UTC,
+    DATEADD('SECOND', UNIFORM(0, 86400, RANDOM()), l.l_shipdate) AS shipdate_local,
+    l.l_commitdate AS commitdate_UTC,
+    DATEADD(hour, 5, l.l_commitdate) AS commitdate_local,
+    l.l_receiptdate AS receiptdate_UTC,
+    DATEADD('SECOND', UNIFORM(0, 86400, RANDOM()), l.l_receiptdate) AS receiptdate_local,
+    CASE 
+        WHEN DATEDIFF(day, l.l_shipdate, l.l_receiptdate) <= 10 THEN 'En plazo'
+        WHEN DATEDIFF(day, l.l_shipdate, l.l_receiptdate) <= 20 THEN 'Retraso moderado'
+        ELSE 'Retraso considerable'
+    END AS deliverytime,
+    e.id_evento AS eventkey,
+    d.storekey AS storekey
+FROM cleaned_lineitems l
+JOIN cleaned_orders o ON l.l_orderkey = o.o_orderkey
+JOIN dim_store d ON l.l_orderkey = d.l_orderkey
+JOIN dim_event e ON l.l_orderkey = e.o_orderkey
+LEFT JOIN exchange_rates er ON d.pais = er.pais
+LEFT JOIN timechange_source tc ON d.storekey = tc.tc_nationkey
 )
 SELECT * FROM sales_data
