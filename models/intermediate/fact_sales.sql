@@ -13,6 +13,7 @@ WITH cleaned_orders AS (
 ),
 cleaned_lineitems AS (
     SELECT 
+        l_linenumber,
         l_orderkey,
         l_partkey,
         l_suppkey,
@@ -106,6 +107,7 @@ exchange_rates AS (
 ),
 sales_data AS (
     SELECT 
+        l.l_linenumber,
         l.l_orderkey,
         o.o_custkey,
         c.c_custname,
