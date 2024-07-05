@@ -7,7 +7,11 @@ WITH total_sales_per_store AS (
     GROUP BY 
         storekey
 )
-SELECT 
-    AVG(total_sales) AS average_sales
+SELECT
+    d.st_storenationname AS nation,
+     ROUND(AVG(total_sales),2) AS average_sales
 FROM 
-    total_sales_per_store;
+    total_sales_per_store
+JOIN {{ ref('dim_store') }} d ON storekey = d.st_storekey 
+GROUP BY nation   
+ORDER BY average_sales DESC
