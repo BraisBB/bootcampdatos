@@ -1,11 +1,11 @@
 {{ config(
     materialized='incremental',
-    unique_key='p_partkey'
+    unique_key=['p_partkey', ' ps_suppkey']
 ) }}
 WITH dim_part AS (
-
     SELECT 
-        CONCAT (p_partkey, ps_suppkey) AS p_partkey,
+        p_partkey, 
+        ps_suppkey,
         p_partname,
         p_mfgr,
         p_brand,
@@ -17,6 +17,7 @@ WITH dim_part AS (
         ps_supplycost
         FROM {{ ref ('stg_part') }}
         JOIN {{ ref('stg_partsupp') }} n ON p_partkey = ps_partkey
+        
 )
 
 SELECT * FROM dim_part
