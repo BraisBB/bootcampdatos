@@ -184,6 +184,7 @@ SELECT
     (l.l_extendedprice * (1 - l.l_discount) + l.l_tax) * er.tipo_cambio AS totalprice_local_store,
     o.o_orderdate AS orderdate_UTC,
     DATEADD('SECOND', UNIFORM(0, 86400, RANDOM()),  o.o_orderdate) AS orderdate_local,
+    tc.tc_adjustedtime,
     o.o_orderpriority AS orderpriority,
     o.o_orderstatus AS orderstatus,
     l.l_partkey AS partkey,
@@ -201,10 +202,12 @@ SELECT
     DATEADD(hour, 5, l.l_commitdate) AS commitdate_local,
     l.l_receiptdate AS receiptdate_UTC,
     DATEADD('SECOND', UNIFORM(0, 86400, RANDOM()), l.l_receiptdate) AS receiptdate_local,
-    CASE 
-        WHEN DATEDIFF(day, l.l_shipdate, l.l_receiptdate) <= 10 THEN 'En plazo'
-        WHEN DATEDIFF(day, l.l_shipdate, l.l_receiptdate) <= 20 THEN 'Retraso moderado'
-        ELSE 'Retraso considerable'
+   CASE 
+    WHEN DATEDIFF(day, l.l_commitdate, l.l_receiptdate) > 30 THEN '0 Fuera de plazo'
+    WHEN DATEDIFF(day, l.l_commitdate, l.l_receiptdate) <= 0 THEN '1 En plazo'
+    WHEN DATEDIFF(day, l.l_commitdate, l.l_receiptdate) <= 10 THEN '2 Entrega tardía'
+    WHEN DATEDIFF(day, l.l_commitdate, l.l_receiptdate) <= 30 THEN '3 Entrega crítica'
+    ELSE 'Desconocido'
     END AS deliverytime,
     e.id_evento AS eventkey,
     d.storekey AS storekey
@@ -216,3 +219,4 @@ LEFT JOIN exchange_rates er ON d.pais = er.pais
 LEFT JOIN timechange_source tc ON d.storekey = tc.tc_nationkey
 )
 SELECT * FROM sales_data
+
