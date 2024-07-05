@@ -17,6 +17,7 @@ WITH dim_part AS (
         ps_supplycost
         FROM {{ ref ('stg_part') }}
         JOIN {{ ref('stg_partsupp') }} n ON p_partkey = ps_partkey
+        
 )
 
 SELECT * FROM dim_part
