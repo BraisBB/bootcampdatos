@@ -217,6 +217,8 @@ JOIN dim_store d ON l.l_orderkey = d.l_orderkey
 JOIN dim_event e ON l.l_orderkey = e.o_orderkey
 LEFT JOIN exchange_rates er ON d.pais = er.pais
 LEFT JOIN timechange_source tc ON d.storekey = tc.tc_nationkey
+    {% if is_incremental() %}
+    where orderkey not in (select orderkey from {{ this }})
+    {% endif %}
 )
 SELECT * FROM sales_data
-
