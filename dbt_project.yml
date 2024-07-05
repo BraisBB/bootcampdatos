@@ -42,9 +42,6 @@ models:
     staging:
       materialized: view
       +database: PROYECTO
-    analytics:
-      materialized: view
-      +database: PROYECTO
 
 vars:
   database: 'RAW'
