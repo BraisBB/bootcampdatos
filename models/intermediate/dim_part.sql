@@ -1,12 +1,11 @@
 {{ config(
     materialized='incremental',
-    unique_key=['p_partkey', ' ps_suppkey']
+    unique_key='p_partkey'
 ) }}
 WITH dim_part AS (
 
     SELECT 
-        p_partkey,
-        ps_suppkey,
+        CONCAT (p_partkey, ps_suppkey) AS p_partkey,
         p_partname,
         p_mfgr,
         p_brand,
