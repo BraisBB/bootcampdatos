@@ -1,6 +1,6 @@
 {{ config(
     materialized='incremental',
-    unique_key= ['l_linenumber', 'l_orderkey']
+    unique_key= ['linenumber', 'orderkey']
 ) }}
 
 -- models/facts/fact_sales.sql
