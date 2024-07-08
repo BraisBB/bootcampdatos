@@ -36,11 +36,14 @@ clean-targets:
 
 models:
   PROYECTO:
+    staging:
+      materialized: view
+      +database: PROYECTO
     intermediate:
       materialized: table
       +database: PROYECTO
-    staging:
-      materialized: view
+    analytics:
+      materialized: table
       +database: PROYECTO
 
 vars:
