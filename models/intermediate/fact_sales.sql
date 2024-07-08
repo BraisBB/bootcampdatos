@@ -194,6 +194,7 @@ SELECT
     l.l_extendedprice AS extendedprice,
     l.l_discount AS discount,
     l.l_tax AS tax,
+    l.tipo_operacion,
     l.l_returnflag AS returnflag,
     l.l_linestatus AS linestatus,
     l.l_shipdate AS shipdate_UTC,
